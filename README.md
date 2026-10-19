@@ -7,5 +7,5 @@ Change Observer is a Python program that allows you to monitor screen changes be
 
 ## Build EXE
 ```bash
-uv run nuitka --onefile --include-data-files=notification.wav=notification.wav main.py
+uv run nuitka --onefile --include-data-files=notification.wav=notification.wav --windows-icon-from-ico=icon.ico main.py
 ```
