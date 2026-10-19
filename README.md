@@ -7,9 +7,9 @@ Python script that monitors a specific region of your screen for visual changes.
 - **Screenshot Logging**: Optionally saves images of every recorded change to a specified directory.
 - **Configurable Polling & Cooldowns**: Control exactly how often the script checks the screen and how long it waits after detecting a change.
 
-![change_observer](https://github.com/DroidExter/Change-Observer/assets/73828018/d424fc7a-ecb1-4584-afc2-829ea05f3b01)
+<img width="1126" height="296" alt="image" src="https://github.com/user-attachments/assets/146fcfb7-2a56-4a7b-a198-2585ae5d3185" />
 
-## [Download](https://github.com/DroidExter/Change-Observer/releases/latest/download/Change_Observer.exe)
+### [Download](https://github.com/DroidExter/Change-Observer/releases/latest/download/Change_Observer.exe)
 
 ## Build EXE
 ```ps1
