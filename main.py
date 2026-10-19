@@ -83,7 +83,7 @@ class ChangeObserver:
             print(f"{time.localtime().tm_hour:02}:{time.localtime().tm_min:02}:{time.localtime().tm_sec:02} - change detected ({self.changesCount})")
             self.prevScreen = screen
             if self.screenshotDir:
-                screen.save(fr"{self.screenshotDir}/screenshot{self.changesCount}.png", 'PNG')
+                screen.save(Path(self.screenshotDir)/f"{self.changesCount}.png", 'PNG')
             if self.soundPath:
                 playsound(self.soundPath, block=False)
                 
