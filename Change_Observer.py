@@ -4,6 +4,8 @@ from time import sleep, localtime
 from os import mkdir, path
 import sys
 from pygame import mixer
+from pathlib import Path
+import argparse
 
 class ChangeObserver:
     captureKeys = ['Key.ctrl', 'Key.ctrl_l', 'Key.ctrl_r']
@@ -39,7 +41,7 @@ class ChangeObserver:
             if not self.mousePos1Captured:
                 self.mousePos1 = mousePos
                 self.mousePos1Captured = True
-                print('PRESS "CTRL" TO CAPTURE MOUSE POSITION FOR SECOND AREA CORNER')
+                print('Press "CTRL" to capture mouse position for second area corner')
                 return True
             else:
                 self.mousePos2 = mousePos
@@ -49,7 +51,7 @@ class ChangeObserver:
             
     def captureCoords(self):
         self.mousePos1Captured = False
-        print('PRESS "CTRL" TO CAPTURE MOUSE POSITION FOR FIRST AREA CORNER')
+        print('Press "CTRL" to capture mouse position for first area corner')
         with keyboard.Listener(on_press = self._onPress) as self.klis:
             with mouse.Listener(on_move = self._getCoord) as self.mlis:
                 self.klis.join()
@@ -67,7 +69,7 @@ class ChangeObserver:
             self.mousePos1[1], self.mousePos2[1] = self.mousePos2[1], self.mousePos1[1]
 
         print()
-        print(f"OK I'M OBSERVING CHANGES ON THE SCREEN BETWEEN POSITION [X:{self.mousePos1[0]} Y:{self.mousePos1[1]}] AND [X:{self.mousePos2[0]} Y:{self.mousePos2[1]}]...")
+        print(f"OK I'm observing changes on the screen between position [X:{self.mousePos1[0]} Y:{self.mousePos1[1]}] AND [X:{self.mousePos2[0]} Y:{self.mousePos2[1]}]...")
         
         self.prevScreen = self._grabScreen(self.mousePos1[0], self.mousePos1[1], self.mousePos2[0], self.mousePos2[1])
 
@@ -75,7 +77,7 @@ class ChangeObserver:
         screen = self._grabScreen(self.mousePos1[0], self.mousePos1[1], self.mousePos2[0], self.mousePos2[1])
         if screen != self.prevScreen:
             self.changesCount += 1
-            print(f"CHANGE {self.changesCount} DETECTED - {localtime().tm_hour}:{localtime().tm_min}:{localtime().tm_sec}")
+            print(f"Change {self.changesCount} detected - {localtime().tm_hour}:{localtime().tm_min}:{localtime().tm_sec}")
             self.prevScreen = screen
             if self.save:
                 screen.save(fr"{self.screenShotfolder}/screenshot{self.changesCount}.png", 'PNG')
@@ -99,14 +101,14 @@ if __name__ == '__main__':
     print("---CHANGE OBSERVER---")
 
     # check delay
-    _in = input("CHECK DELAY (IN SECONDS): ")
+    _in = input("Check period (in seconds): ")
     if _in:
         checkDelay = float(_in)
     else:
         checkDelay = 1
         
     # sounds
-    _in = input("PLAY SOUNDS? (0 = no, 1 = yes): ")
+    _in = input("Play sounds? (0 = no, 1 = yes): ")
     if _in == '0':
         changeObserver.playSounds = False
 
@@ -115,15 +117,15 @@ if __name__ == '__main__':
         try:
             changeObserver.soundPlayer = mixer.Sound(resource_path(changeObserver.soundPath))
         except FileNotFoundError:
-            print(f"ERROR: FILE {changeObserver.soundPath} NOT FOUND!")
+            print(f"Error: file {changeObserver.soundPath} not found!")
             changeObserver.playSounds = False
 
     # screenshots saving
-    _in = input("SAVE CHANGE SCREENSHOTS? (0 = no, 1 = yes): ")
+    _in = input("Save change screenshots? (0 = no, 1 = yes): ")
     if _in == '1':
         changeObserver.save = True
     if changeObserver.save:
-        changeObserver.screenShotfolder = input("SAVE TO FOLDER (FOLDER NAME): ")
+        changeObserver.screenShotfolder = input("Save to folder (folder name): ")
         try:
             mkdir(changeObserver.screenShotfolder)
         except FileExistsError:
