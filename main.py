@@ -1,28 +1,36 @@
 from pynput import keyboard, mouse
 from PIL import ImageGrab
-from time import sleep, localtime
-from os import mkdir, path
+import time
 import sys
 from pygame import mixer
 from pathlib import Path
 import argparse
 
 class ChangeObserver:
-    captureKeys = ['Key.ctrl', 'Key.ctrl_l', 'Key.ctrl_r']
-    playSounds = True
-    save = False
-    soundPath = 'notification.wav'
+    def __init__(self, soundPath=None, screenshotDir = None):
+        self.captureKeys = ['Key.ctrl', 'Key.ctrl_l', 'Key.ctrl_r']
 
-    soundPlayer = None
+        if soundPath:
+            mixer.init()
+            self.soundPlayer = mixer.Sound(resource_path(soundPath))
+        else:
+            self.soundPlayer = None
 
-    screenShotfolder = ''
+        self.screenshotDir = Path(screenshotDir) if screenshotDir else None
+        if self.screenshotDir:
+            self.screenshotDir.mkdir(exist_ok=True)
 
-    changesCount = 0
-    prevScreen = None
-    mousePos = mousePos1 = mousePos2 = [0, 0]
-    mousePos1Captured = False
-    klis = None
-    mlis = None
+        self.changesCount = 0
+        self.prevScreen = None
+        
+        # Initialized separately to prevent shared reference bugs
+        self.mousePos = [0, 0]
+        self.mousePos1 = [0, 0]
+        self.mousePos2 = [0, 0]
+        
+        self.mousePos1Captured = False
+        self.klis = None
+        self.mlis = None
         
 
     def _grabScreen(self, x1,y1,x2,y2):
@@ -77,11 +85,11 @@ class ChangeObserver:
         screen = self._grabScreen(self.mousePos1[0], self.mousePos1[1], self.mousePos2[0], self.mousePos2[1])
         if screen != self.prevScreen:
             self.changesCount += 1
-            print(f"Change {self.changesCount} detected - {localtime().tm_hour}:{localtime().tm_min}:{localtime().tm_sec}")
+            print(f"Change {self.changesCount} detected - {time.localtime().tm_hour:02}:{time.localtime().tm_min:02}:{time.localtime().tm_sec:02}")
             self.prevScreen = screen
-            if self.save:
-                screen.save(fr"{self.screenShotfolder}/screenshot{self.changesCount}.png", 'PNG')
-            if self.playSounds:
+            if self.screenshotDir:
+                screen.save(fr"{self.screenshotDir}/screenshot{self.changesCount}.png", 'PNG')
+            if self.soundPlayer:
                 self.soundPlayer.play()
                 
 
@@ -91,48 +99,40 @@ def resource_path(relative_path):
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
-        base_path = path.abspath(".")
+        base_path = Path(__file__).parent
 
-    return path.join(base_path, relative_path)
+    return Path(base_path)/relative_path
 
 
 if __name__ == '__main__':
-    changeObserver = ChangeObserver()
+    arg_parser = argparse.ArgumentParser(
+        prog='Change Observer',
+        description='',
+    )
+
+    arg_parser.add_argument('-p', '--period', type=float, default=0.1)
+    arg_parser.add_argument('-o', '--output', type=str, default='')
+    arg_parser.add_argument('--nosound', action='store_true')
+    arg_parser.add_argument('-s', '--soundpath', type=str, default='')
+
+    args = arg_parser.parse_args()
+
     print("---CHANGE OBSERVER---")
 
-    # check delay
-    _in = input("Check period (in seconds): ")
-    if _in:
-        checkDelay = float(_in)
+    if args.nosound:
+        soundPath = None
+    elif args.soundpath:
+        soundPath = args.soundpath
     else:
-        checkDelay = 1
-        
-    # sounds
-    _in = input("Play sounds? (0 = no, 1 = yes): ")
-    if _in == '0':
-        changeObserver.playSounds = False
+        soundPath = 'notification.wav'
 
-    if changeObserver.playSounds:
-        mixer.init()
-        try:
-            changeObserver.soundPlayer = mixer.Sound(resource_path(changeObserver.soundPath))
-        except FileNotFoundError:
-            print(f"Error: file {changeObserver.soundPath} not found!")
-            changeObserver.playSounds = False
-
-    # screenshots saving
-    _in = input("Save change screenshots? (0 = no, 1 = yes): ")
-    if _in == '1':
-        changeObserver.save = True
-    if changeObserver.save:
-        changeObserver.screenShotfolder = input("Save to folder (folder name): ")
-        try:
-            mkdir(changeObserver.screenShotfolder)
-        except FileExistsError:
-            pass
-
+    changeObserver = ChangeObserver(
+        soundPath = soundPath,
+        screenshotDir = args.output or None  
+    )
+    
+    period = args.period
     changeObserver.captureCoords()
-
     while True:
         changeObserver.check()
-        sleep(checkDelay)
+        time.sleep(period)
