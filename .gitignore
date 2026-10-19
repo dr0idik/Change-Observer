@@ -5,3 +5,5 @@ main.dist
 main.onefile-build
 main.exe
 Change_Observer.exe
+build
+dist

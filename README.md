@@ -13,5 +13,5 @@ Python script that monitors a specific region of your screen for visual changes.
 
 ## Build EXE
 ```ps1
-uv run nuitka --onefile --include-data-files=notification.wav=notification.wav --windows-icon-from-ico=icon.ico main.py
+uv run pyinstaller --onefile --add-data "notification.wav;." --icon=icon.ico main.py
 ```
