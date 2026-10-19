@@ -86,6 +86,10 @@ class ChangeObserver:
                 screen.save(Path(self.screenshotDir)/f"{self.changesCount}.png", 'PNG')
             if self.soundPath:
                 playsound(self.soundPath, block=False)
+            return True
+        
+        else:
+            return False
                 
 
 def resource_path(relative_path):
@@ -106,9 +110,10 @@ if __name__ == '__main__':
     )
 
     arg_parser.add_argument('-p', '--period', type=float, default=0.1)
+    arg_parser.add_argument('-w', '--wait', type=float, default=1.0)
     arg_parser.add_argument('-o', '--output', type=str, default='')
-    arg_parser.add_argument('--nosound', action='store_true')
     arg_parser.add_argument('-s', '--soundpath', type=str, default='')
+    arg_parser.add_argument('--nosound', action='store_true')
 
     args = arg_parser.parse_args()
 
@@ -127,7 +132,10 @@ if __name__ == '__main__':
     )
 
     period = args.period
+    waitTime = args.wait
     changeObserver.captureCoords()
     while True:
-        changeObserver.check()
-        time.sleep(period)
+        if changeObserver.check():
+            time.sleep(waitTime)
+        else:
+            time.sleep(period)
