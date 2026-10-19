@@ -104,16 +104,22 @@ def resource_path(relative_path):
 
 
 if __name__ == '__main__':
+
     arg_parser = argparse.ArgumentParser(
         prog='Change Observer',
-        description='',
+        description='Monitors a selected region of your screen for visual changes. Alerts you via sound and/or saves a screenshot when a change is detected.',
     )
 
-    arg_parser.add_argument('-p', '--period', type=float, default=0.1)
-    arg_parser.add_argument('-w', '--wait', type=float, default=1.0)
-    arg_parser.add_argument('-o', '--output', type=str, default='')
-    arg_parser.add_argument('-s', '--soundpath', type=str, default='')
-    arg_parser.add_argument('--nosound', action='store_true')
+    arg_parser.add_argument('-p', '--period', type=float, default=0.1, 
+                            help='Time in seconds between screen checks (default: 0.1)')
+    arg_parser.add_argument('-c', '--cooldown', type=float, default=1.0, 
+                            help='Cooldown time in seconds to cooldown AFTER a change is detected before resuming checks (default: 1.0)')
+    arg_parser.add_argument('-o', '--output', type=str, default='', 
+                            help='Directory path to save screenshots of detected changes. If omitted, no screenshots are saved.')
+    arg_parser.add_argument('-s', '--soundpath', type=str, default='', 
+                            help='Path to a custom sound file to play on change.')
+    arg_parser.add_argument('--nosound', action='store_true', 
+                            help='Disable sound playback when a change is detected.')
 
     args = arg_parser.parse_args()
 
@@ -132,10 +138,10 @@ if __name__ == '__main__':
     )
 
     period = args.period
-    waitTime = args.wait
+    cooldown = args.cooldown
     changeObserver.captureCoords()
     while True:
         if changeObserver.check():
-            time.sleep(waitTime)
+            time.sleep(cooldown)
         else:
             time.sleep(period)
