@@ -1,2 +1,6 @@
 .venv
 .vscode
+main.build
+main.dist
+main.onefile-build
+main.exe

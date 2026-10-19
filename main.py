@@ -93,15 +93,15 @@ class ChangeObserver:
                 self.soundPlayer.play()
                 
 
-# for PyInstaller
 def resource_path(relative_path):
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = Path(__file__).parent
-
-    return Path(base_path)/relative_path
+    """Get absolute path to resource, works for dev and for PyInstaller/Nuitka onefile."""
+    path = Path(relative_path)
+    if path.is_absolute():
+        return path
+    
+    # Nuitka and PyInstaller expose sys._MEIPASS when running in onefile mode
+    base_path = getattr(sys, '_MEIPASS', Path(__file__).parent)
+    return base_path / path
 
 
 if __name__ == '__main__':
