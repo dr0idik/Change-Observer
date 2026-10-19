@@ -2,19 +2,15 @@ from pynput import keyboard, mouse
 from PIL import ImageGrab
 import time
 import sys
-from pygame import mixer
+from playsound3 import playsound
 from pathlib import Path
 import argparse
 
 class ChangeObserver:
-    def __init__(self, soundPath=None, screenshotDir = None):
+    def __init__(self, soundPath=None, screenshotDir=None):
         self.captureKeys = ['Key.ctrl', 'Key.ctrl_l', 'Key.ctrl_r']
 
-        if soundPath:
-            mixer.init()
-            self.soundPlayer = mixer.Sound(resource_path(soundPath))
-        else:
-            self.soundPlayer = None
+        self.soundPath = soundPath
 
         self.screenshotDir = Path(screenshotDir) if screenshotDir else None
         if self.screenshotDir:
@@ -44,7 +40,6 @@ class ChangeObserver:
 
     def _onPress(self, key):
         key = str(key).strip("'")
-        print(key)
         if key in self.captureKeys:
             if not self.mousePos1Captured:
                 self.mousePos1 = mousePos
@@ -89,8 +84,8 @@ class ChangeObserver:
             self.prevScreen = screen
             if self.screenshotDir:
                 screen.save(fr"{self.screenshotDir}/screenshot{self.changesCount}.png", 'PNG')
-            if self.soundPlayer:
-                self.soundPlayer.play()
+            if self.soundPath:
+                playsound(self.soundPath, block=False)
                 
 
 def resource_path(relative_path):
@@ -130,7 +125,7 @@ if __name__ == '__main__':
         soundPath = soundPath,
         screenshotDir = args.output or None  
     )
-    
+
     period = args.period
     changeObserver.captureCoords()
     while True:
