@@ -10,7 +10,7 @@ class ChangeObserver:
     def __init__(self, soundPath=None, screenshotDir=None):
         self.captureKeys = ['Key.ctrl', 'Key.ctrl_l', 'Key.ctrl_r']
 
-        self.soundPath = soundPath
+        self.soundPath = str(resource_path(soundPath)) if soundPath else None
 
         self.screenshotDir = Path(screenshotDir) if screenshotDir else None
         if self.screenshotDir:
