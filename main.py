@@ -80,7 +80,7 @@ class ChangeObserver:
         screen = self._grabScreen(self.mousePos1[0], self.mousePos1[1], self.mousePos2[0], self.mousePos2[1])
         if screen != self.prevScreen:
             self.changesCount += 1
-            print(f"Change {self.changesCount} detected - {time.localtime().tm_hour:02}:{time.localtime().tm_min:02}:{time.localtime().tm_sec:02}")
+            print(f"{time.localtime().tm_hour:02}:{time.localtime().tm_min:02}:{time.localtime().tm_sec:02} - change detected ({self.changesCount})")
             self.prevScreen = screen
             if self.screenshotDir:
                 screen.save(fr"{self.screenshotDir}/screenshot{self.changesCount}.png", 'PNG')
