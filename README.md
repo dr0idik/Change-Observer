@@ -13,6 +13,24 @@ Python script that monitors a specific region of your screen for visual changes.
 > [!WARNING]
 > Some antivirus programs may falsely evaluate this file as positive 😕
 
+### Usage
+```
+usage: Change Observer [-h] [-p PERIOD] [-c COOLDOWN] [-o OUTPUT] [-s SOUNDPATH] [--nosound]
+
+Monitors a selected region of your screen for visual changes. Alerts you via sound and/or saves a screenshot when a
+change is detected.
+
+options:
+  -h, --help            show this help message and exit
+  -p, --period PERIOD   Time in seconds between screen checks (default: 0.1)
+  -c, --cooldown COOLDOWN
+                        Cooldown time in seconds to cooldown AFTER a change is detected before resuming checks
+                        (default: 1.0)
+  -o, --output OUTPUT   Directory path to save screenshots of detected changes. If omitted, no screenshots are saved.
+  -s, --soundpath SOUNDPATH
+                        Path to a custom sound file to play on change.
+  --nosound             Disable sound playback when a change is detected.
+```
 ## Build EXE
 ```ps1
 uv run pyinstaller --onefile --add-data "notification.wav;." --icon=icon.ico main.py
