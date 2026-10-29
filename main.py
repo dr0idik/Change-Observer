@@ -49,13 +49,12 @@ class ChangeObserver:
         self.prevScreen = None
 
         # Initialized separately to prevent shared reference bugs
-        self.mousePos = [0, 0]
         self.mousePos1 = [0, 0]
         self.mousePos2 = [0, 0]
 
+        self.mouse = mouse.Controller()
         self.mousePos1Captured = False
         self.klis = None
-        self.mlis = None
 
         self.frameThickness = max(0, frameThickness)
         self.highlightTime = max(0.0, highlightTime)
@@ -65,30 +64,26 @@ class ChangeObserver:
         bbox = (x1, y1, x2, y2)
         return ImageGrab.grab(bbox=bbox, include_layered_windows=False, all_screens=True)
 
-    def _getCoord(self, x, y):
-        self.mousePos = [x, y]
-
     def _onPress(self, key):
         key = str(key).strip("'")
         if key in self.captureKeys:
+            # Read the actual current position, so it's correct even if
+            # the mouse hasn't moved since the script started
+            pos = list(self.mouse.position)
             if not self.mousePos1Captured:
-                self.mousePos1 = list(self.mousePos)
+                self.mousePos1 = pos
                 self.mousePos1Captured = True
                 print('Press "CTRL" to capture mouse position for second area corner')
                 return True
             else:
-                self.mousePos2 = list(self.mousePos)
-                self.mlis.stop()
-                self.klis.stop()
-                return False
+                self.mousePos2 = pos
+                return False  # stops the keyboard listener
 
     def captureCoords(self):
         self.mousePos1Captured = False
         print('Press "CTRL" to capture mouse position for first area corner')
         with keyboard.Listener(on_press=self._onPress) as self.klis:
-            with mouse.Listener(on_move=self._getCoord) as self.mlis:
-                self.klis.join()
-                self.mlis.join()
+            self.klis.join()
 
         # for observing one pixel
         if self.mousePos1 == self.mousePos2:
@@ -248,9 +243,7 @@ if __name__ == '__main__':
     arg_parser.add_argument('-t', '--thickness', type=int, default=2,
                             help='Thickness in pixels of the frame drawn around the observed area. '
                                  'Use 0 to disable the frame (default: 2)')
-    arg_parser.add_argument('-H', '--highlight', type=float, default=2,
-                            help='Seconds to highlight the part of the area where a change was '
-                                 'detected (Windows 10 2004+ only). Use 0 to disable (default: 2)')
+    arg_parser.add_argument('-H', '--highlight', type=float, default=2, help='Seconds to highlight the part of the area where a change was detected (Windows 10 2004+ only). Use 0 to disable (default: 2)')
 
     args = arg_parser.parse_args()
 
