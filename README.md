@@ -16,7 +16,7 @@ Python script that monitors a specific region of your screen for visual changes.
 ### Usage
 ```
 usage: Change Observer [-h] [-p PERIOD] [-c COOLDOWN] [-o OUTPUT] [-v VOLUME] [-s SOUNDPATH] [--nosound]
-                       [-t THICKNESS]
+                       [-t THICKNESS] [-H HIGHLIGHT]
 
 Monitors a selected region of your screen for visual changes. Alerts you via sound and/or saves a screenshot when
 a change is detected.
@@ -36,6 +36,9 @@ options:
   -t, --thickness THICKNESS
                         Thickness in pixels of the frame drawn around the observed area. Use 0 to disable the
                         frame (default: 2)
+  -H, --highlight HIGHLIGHT
+                        Seconds to highlight the part of the area where a change was detected. Use 0 to disable
+                        (default: 1.0)
 ```
 ## Build EXE
 ```ps1
