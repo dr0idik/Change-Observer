@@ -2,15 +2,21 @@ from pynput import keyboard, mouse
 from PIL import ImageGrab
 import time
 import sys
-from playsound3 import playsound
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'  # skryje uvítací hlášku pygame
+import pygame
 from pathlib import Path
 import argparse
 
 class ChangeObserver:
-    def __init__(self, soundPath=None, screenshotDir=None):
+    def __init__(self, soundPath=None, screenshotDir=None, volume=1.0):
         self.captureKeys = ['Key.ctrl', 'Key.ctrl_l', 'Key.ctrl_r']
 
-        self.soundPath = str(resource_path(soundPath)) if soundPath else None
+        self.sound = None
+        if soundPath:
+            pygame.mixer.init()
+            self.sound = pygame.mixer.Sound(str(resource_path(soundPath)))
+            self.sound.set_volume(max(0.0, min(1.0, volume)))
 
         self.screenshotDir = Path(screenshotDir) if screenshotDir else None
         if self.screenshotDir:
@@ -84,8 +90,8 @@ class ChangeObserver:
             self.prevScreen = screen
             if self.screenshotDir:
                 screen.save(Path(self.screenshotDir)/f"{self.changesCount}.png", 'PNG')
-            if self.soundPath:
-                playsound(self.soundPath, block=False)
+            if self.sound:
+                self.sound.play()
             return True
         
         else:
@@ -116,6 +122,8 @@ if __name__ == '__main__':
                             help='Cooldown time in seconds to cooldown AFTER a change is detected before resuming checks (default: 1.0)')
     arg_parser.add_argument('-o', '--output', type=str, default='', 
                             help='Directory path to save screenshots of detected changes. If omitted, no screenshots are saved.')
+    arg_parser.add_argument('-v', '--volume', type=float, default=1.0,
+                        help='Sound volume from 0.0 (silent) to 1.0 (full), default: 1.0')
     arg_parser.add_argument('-s', '--soundpath', type=str, default='', 
                             help='Path to a custom sound file to play on change.')
     arg_parser.add_argument('--nosound', action='store_true', 
@@ -134,7 +142,8 @@ if __name__ == '__main__':
 
     changeObserver = ChangeObserver(
         soundPath = soundPath,
-        screenshotDir = args.output or None  
+        screenshotDir = args.output or None,
+        volume = args.volume
     )
 
     period = args.period
