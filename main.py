@@ -3,13 +3,16 @@ from PIL import ImageGrab
 import time
 import sys
 import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'  # skryje uvítací hlášku pygame
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 from pathlib import Path
 import argparse
+import tkinter as tk
+import ctypes
+
 
 class ChangeObserver:
-    def __init__(self, soundPath=None, screenshotDir=None, volume=1.0):
+    def __init__(self, soundPath=None, screenshotDir=None, volume=1.0, frameThickness=2):
         self.captureKeys = ['Key.ctrl', 'Key.ctrl_l', 'Key.ctrl_r']
 
         self.sound = None
@@ -33,7 +36,9 @@ class ChangeObserver:
         self.mousePos1Captured = False
         self.klis = None
         self.mlis = None
-        
+
+        self.frameThickness = max(0, frameThickness)
+        self.overlay = None
 
     def _grabScreen(self, x1,y1,x2,y2):
         bbox = (x1,y1,x2,y2)
@@ -82,6 +87,11 @@ class ChangeObserver:
         
         self.prevScreen = self._grabScreen(self.mousePos1[0], self.mousePos1[1], self.mousePos2[0], self.mousePos2[1])
 
+        if self.frameThickness > 0:
+            self.overlay = AreaOverlay(self.mousePos1[0], self.mousePos1[1],
+                                    self.mousePos2[0], self.mousePos2[1],
+                                    thickness=self.frameThickness)
+
     def check(self):
         screen = self._grabScreen(self.mousePos1[0], self.mousePos1[1], self.mousePos2[0], self.mousePos2[1])
         if screen != self.prevScreen:
@@ -96,7 +106,16 @@ class ChangeObserver:
         
         else:
             return False
-                
+
+    def wait(self, seconds):
+        end = time.time() + seconds
+        while True:
+            if self.overlay:
+                self.overlay.update()
+            remaining = end - time.time()
+            if remaining <= 0:
+                break
+            time.sleep(min(0.05, remaining))
 
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller/Nuitka onefile."""
@@ -109,7 +128,41 @@ def resource_path(relative_path):
     return base_path / path
 
 
+class AreaOverlay:
+    """Draws a frame around the observed area, just outside of it."""
+    def __init__(self, x1, y1, x2, y2, color='red', thickness=2):
+        self.root = tk.Tk()
+        self.root.withdraw()
+        t = thickness
+        w, h = x2 - x1, y2 - y1
+
+        # (width, height, x, y)
+        strips = [
+            (w + 2*t, t, x1 - t, y1 - t),  # top
+            (w + 2*t, t, x1 - t, y2),      # bottom
+            (t, h, x1 - t, y1),            # left
+            (t, h, x2, y1),                # right
+        ]
+        
+        self.windows = []
+        for sw, sh, sx, sy in strips:
+            win = tk.Toplevel(self.root)
+            win.overrideredirect(True)
+            win.attributes('-topmost', True)
+            win.configure(bg=color)
+            win.geometry(f"{sw}x{sh}+{sx}+{sy}")
+            self.windows.append(win)
+        self.root.update()
+
+    def update(self):
+        self.root.update()
+
+    def close(self):
+        self.root.destroy()
+
 if __name__ == '__main__':
+    if sys.platform == 'win32':
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
     arg_parser = argparse.ArgumentParser(
         prog='Change Observer',
@@ -128,6 +181,7 @@ if __name__ == '__main__':
                             help='Path to a custom sound file to play on change.')
     arg_parser.add_argument('--nosound', action='store_true', 
                             help='Disable sound playback when a change is detected.')
+    arg_parser.add_argument('-t', '--thickness', type=int, default=2, help='Thickness in pixels of the frame drawn around the observed area. Use 0 to disable the frame (default: 2)')
 
     args = arg_parser.parse_args()
 
@@ -143,7 +197,8 @@ if __name__ == '__main__':
     changeObserver = ChangeObserver(
         soundPath = soundPath,
         screenshotDir = args.output or None,
-        volume = args.volume
+        volume = args.volume,
+        frameThickness = args.thickness
     )
 
     period = args.period
@@ -151,6 +206,6 @@ if __name__ == '__main__':
     changeObserver.captureCoords()
     while True:
         if changeObserver.check():
-            time.sleep(cooldown)
+            changeObserver.wait(cooldown)
         else:
-            time.sleep(period)
+            changeObserver.wait(period)

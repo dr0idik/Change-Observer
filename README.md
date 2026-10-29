@@ -16,9 +16,10 @@ Python script that monitors a specific region of your screen for visual changes.
 ### Usage
 ```
 usage: Change Observer [-h] [-p PERIOD] [-c COOLDOWN] [-o OUTPUT] [-v VOLUME] [-s SOUNDPATH] [--nosound]
+                       [-t THICKNESS]
 
-Monitors a selected region of your screen for visual changes. Alerts you via sound and/or saves a screenshot when a
-change is detected.
+Monitors a selected region of your screen for visual changes. Alerts you via sound and/or saves a screenshot when
+a change is detected.
 
 options:
   -h, --help            show this help message and exit
@@ -26,11 +27,15 @@ options:
   -c, --cooldown COOLDOWN
                         Cooldown time in seconds to cooldown AFTER a change is detected before resuming checks
                         (default: 1.0)
-  -o, --output OUTPUT   Directory path to save screenshots of detected changes. If omitted, no screenshots are saved.
+  -o, --output OUTPUT   Directory path to save screenshots of detected changes. If omitted, no screenshots are
+                        saved.
   -v, --volume VOLUME   Sound volume from 0.0 (silent) to 1.0 (full), default: 1.0
   -s, --soundpath SOUNDPATH
                         Path to a custom sound file to play on change.
   --nosound             Disable sound playback when a change is detected.
+  -t, --thickness THICKNESS
+                        Thickness in pixels of the frame drawn around the observed area. Use 0 to disable the
+                        frame (default: 2)
 ```
 ## Build EXE
 ```ps1
